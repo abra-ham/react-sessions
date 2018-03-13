@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import socketIOClient from "socket.io-client";
+import React, { Component } from 'react';
+import socketIOClient from 'socket.io-client';
 import {
   AppStyled,
   DataContainerStyled,
@@ -9,10 +9,14 @@ import {
 import { TileErrorBoundary, Modal, Portal } from '../presentational';
 import { FAKE_DATA, ENDPOINT } from './constants';
 
-const transformKey = (text) => text.replace(/([a-z](?=[A-Z]))/g, '$1 ');
+const transformKey = text => text.replace(/([a-z](?=[A-Z]))/g, '$1 ');
 
 const DataTile = ({ name, value, loading, active, onClick }) => {
   // TODO: Throw an error if the value is less than 1
+  if (value < 1) {
+    throw new Error('message Error');
+  }
+
   return (
     <DataTileStyled
       loading={loading}
@@ -25,31 +29,38 @@ const DataTile = ({ name, value, loading, active, onClick }) => {
   );
 };
 
-const DataList = ({ data, loading, onClick, principal}) => {
+const DataList = ({ data, loading, onClick, principal }) => {
   const items = loading ? FAKE_DATA : data;
   // TODO: Use the DateTile and return an array for every data
 
-  /* value={items[key]}
-   * name={key}
-   * onClick={onClick}
-   * loading={loading}
-   * active={key === principal}*/
-
-  return null
-}
+  const keys = Object.keys(items);
+  return keys.map(key => {
+    return (
+      <TileErrorBoundary key={key}>
+        <DataTile
+          key={key}
+          name={key}
+          value={items[key]}
+          loading={loading}
+          active={key === principal}
+          onClick={onClick}
+        />
+      </TileErrorBoundary>
+    );
+  });
+};
 
 const InformationModal = ({ open, onClick, children }) => {
   // TODO: Create a Portal component and wrap a modal
   // Create the portal on the ../presentational/ModalPortal.js file
-
   const modal = (
-      <Modal open={open} onClick={onClick}>
-        {children}
-      </Modal>
+    <Modal open={open} onClick={onClick}>
+      {children}
+    </Modal>
   );
 
-  return null;
-}
+  return <Portal> {modal} </Portal>;
+};
 
 class MainTile extends Component {
   constructor(props) {
@@ -59,7 +70,7 @@ class MainTile extends Component {
   }
 
   showModal() {
-    this.setState((prevState) => {
+    this.setState(prevState => {
       return { open: !prevState.open };
     });
   }
@@ -74,18 +85,13 @@ class MainTile extends Component {
     } else {
       content = [
         <h2 key={1}>{transformKey(principal)}</h2>,
-        <span key={2} onClick={this.showModal}>{data[principal]}</span>
+        <span key={2} onClick={this.showModal}>
+          {data[principal]}
+        </span>,
       ];
     }
 
-    return (
-      <MainDataStyled>
-        {content}
-        <InformationModal open={open} onClick={this.showModal} >
-          {content}
-        </InformationModal>
-      </MainDataStyled>
-    );
+    return <MainDataStyled>{content}</MainDataStyled>;
   }
 }
 
@@ -97,7 +103,8 @@ const Information = ({ data, principal, onClick }) => {
       data={data}
       loading={isLoading}
       principal={principal}
-      onClick={onClick} />
+      onClick={onClick}
+    />
   );
 
   return (
@@ -109,7 +116,6 @@ const Information = ({ data, principal, onClick }) => {
 };
 
 class App extends Component {
-
   constructor(props) {
     super(props);
 
@@ -121,7 +127,7 @@ class App extends Component {
   }
 
   updatePrincipal(value) {
-    this.setState((prevState) => {
+    this.setState(prevState => {
       if (value === prevState.principal) {
         return null;
       }
@@ -130,15 +136,23 @@ class App extends Component {
     });
   }
 
+  componentDidCatch(error, info) {
+    console.log(error, info);
+  }
+
   componentDidMount() {
     const socket = socketIOClient(ENDPOINT);
-
 
     // TODO: Update the state.date only if the date.temperature is different
     // Use functional state
 
-    socket.on("FromAPI", (data) => {
-      this.setState(() => null);
+    socket.on('FromAPI', data => {
+      this.setState(state => {
+        if (data) {
+          return { data: data.data };
+        }
+        return null;
+      });
     });
   }
 
@@ -147,7 +161,11 @@ class App extends Component {
 
     return (
       <AppStyled>
-        <Information data={data} principal={principal} onClick={this.updatePrincipal} />
+        <Information
+          data={data}
+          principal={principal}
+          onClick={this.updatePrincipal}
+        />
       </AppStyled>
     );
   }
