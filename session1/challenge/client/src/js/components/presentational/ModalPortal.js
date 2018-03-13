@@ -13,8 +13,9 @@ const Modal = ({ open, onClick, children }) => {
 
 const Portal = ({ children }) => {
   const nodeToAppend = document.body;
-  console.log('children', children);
+  console.log('children', children, nodeToAppend);
   return createPortal(children, nodeToAppend);
 };
 
-export { Modal, Portal };
+export default Portal;
+export { Modal };

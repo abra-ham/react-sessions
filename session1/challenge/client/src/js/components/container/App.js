@@ -53,13 +53,13 @@ const DataList = ({ data, loading, onClick, principal }) => {
 const InformationModal = ({ open, onClick, children }) => {
   // TODO: Create a Portal component and wrap a modal
   // Create the portal on the ../presentational/ModalPortal.js file
-  const modal = (
-    <Modal open={open} onClick={onClick}>
-      {children}
-    </Modal>
+  return (
+    <Portal>
+      <Modal open={open} onClick={onClick}>
+        {children}
+      </Modal>
+    </Portal>
   );
-
-  return <Portal> {modal} </Portal>;
 };
 
 class MainTile extends Component {
@@ -73,6 +73,8 @@ class MainTile extends Component {
     this.setState(prevState => {
       return { open: !prevState.open };
     });
+
+    console.log(this.state);
   }
 
   render() {
@@ -91,7 +93,12 @@ class MainTile extends Component {
       ];
     }
 
-    return <MainDataStyled>{content}</MainDataStyled>;
+    return (
+      <MainDataStyled>
+        {content}
+        <InformationModal>{content}</InformationModal>
+      </MainDataStyled>
+    );
   }
 }
 
