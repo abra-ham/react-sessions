@@ -22,10 +22,10 @@ import {
 } from 'react-router-dom';
 
 const contentMap = {
-  'animation': <AnimationExample />,
-  'fragments': <FragmentsExample />,
+  animation: <AnimationExample />,
+  fragments: <FragmentsExample />,
   'custom attributes': <CustomAttributesExample />,
-  'portals': <PortalExample />,
+  portals: <PortalExample />,
   'error boundaries': <ErrorBoundariesExample />,
 };
 
@@ -48,15 +48,14 @@ class App extends Component {
     this.onMenuItemClicked = this.onMenuItemClicked.bind(this);
   }
 
-
   onMenuItemClicked(currentSection) {
-    const changeSection = (prevState) => {
+    const changeSection = prevState => {
       if (prevState.currentSection === currentSection) {
         return null;
       }
 
       return { currentSection };
-    }
+    };
 
     this.setState(changeSection);
   }
@@ -69,9 +68,22 @@ class App extends Component {
         <Header />
         <Wrapper>
           <div>
-            <Menu items={sections} onClick={this.onMenuItemClicked} active={currentSection} />
+            <Menu
+              items={sections}
+              onClick={this.onMenuItemClicked}
+              active={currentSection}
+            />
           </div>
-          {contentMap[this.state.currentSection]}
+          <Switch>
+            {sections.map(section => (
+              <Route
+                key={section}
+                path={`/${section}`}
+                component={() => contentMap[section]}
+              />
+            ))}
+            <Route exact path="/" render={() => <Redirect to="/animation" />} />
+          </Switch>
         </Wrapper>
       </div>
     );
